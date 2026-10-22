@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FNB | Help Shows Up: The Brand Experience</title>
+<style>
+  :root{
+    --teal:#00A9AC; --teald:#007A7C; --ink:#0F1B1C; --ink2:#12302F; --ink3:#0D4A4B;
+    --amber:#FFB81C; --amberd:#C87400; --pale:#C3D2D1; --pale2:#8FB3B2;
+    --bg:#F5F6F4; --line:#E4E7E6; --mut:#6E7776; --body:#3A4443; --crim:#D66A7E;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;}
+  body{font-family:Arial,Helvetica,sans-serif;background:#060c0d;color:#fff;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+  ::selection{background:var(--teal);color:var(--ink);}
+  button{font-family:inherit;}
+
+  /* ============ THE 16x9 STAGE ============ */
+  #stage{position:relative;width:min(100vw,177.78vh);height:min(100vh,56.25vw);font-size:min(1vw,1.7778vh);background:var(--ink);overflow:hidden;box-shadow:0 0 8em rgba(0,0,0,.6);}
+
+  /* chrome */
+  .topbar{position:absolute;top:0;left:0;right:0;height:5.2em;display:flex;align-items:center;justify-content:space-between;padding:0 3em;z-index:40;}
+  .logo{display:flex;align-items:center;gap:.9em;font-size:1.35em;font-weight:bold;letter-spacing:.03em;}
+  .logo .nm{color:#fff;} .logo .nm span{color:var(--teal);font-weight:normal;}
+  .actlabel{font-size:.95em;letter-spacing:.35em;text-transform:uppercase;color:var(--pale2);font-weight:bold;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);white-space:nowrap;}
+  .menubtn{background:none;border:.14em solid rgba(255,255,255,.28);color:var(--pale);border-radius:2em;padding:.55em 1.5em;font-size:1em;letter-spacing:.15em;cursor:pointer;transition:.2s;}
+  .menubtn:hover{border-color:var(--teal);color:#fff;}
+  .botbar{position:absolute;bottom:0;left:0;right:0;height:5.2em;display:flex;align-items:center;justify-content:space-between;padding:0 3em;z-index:40;}
+  .counter{font-size:.95em;color:var(--pale2);letter-spacing:.12em;min-width:9em;}
+  .dots{display:flex;gap:.7em;align-items:center;}
+  .dot{width:.75em;height:.75em;border-radius:50%;background:rgba(255,255,255,.18);cursor:pointer;transition:.25s;border:none;padding:0;}
+  .dot.on{background:var(--teal);transform:scale(1.35);}
+  .navbtns{display:flex;gap:.8em;min-width:9em;justify-content:flex-end;}
+  .arrow{width:3.2em;height:3.2em;border-radius:50%;border:.14em solid rgba(255,255,255,.28);background:none;color:#fff;font-size:1em;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;}
+  .arrow svg{width:1.2em;height:1.2em;}
+  .arrow:hover:not(:disabled){background:var(--teal);border-color:var(--teal);color:var(--ink);}
+  .arrow:disabled{opacity:.25;cursor:default;}
+  .arrow.next{background:var(--teal);border-color:var(--teal);color:var(--ink);}
+  .arrow.next:hover{background:#fff;border-color:#fff;}
+
+  /* screens */
+  .screen{position:absolute;inset:0;padding:6.5em 6em 6.5em;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;opacity:0;pointer-events:none;transform:translateX(3em);transition:opacity .55s ease,transform .55s ease;z-index:10;}
+  .screen.on{opacity:1;pointer-events:auto;transform:none;z-index:20;}
+  .screen.back{transform:translateX(-3em);}
+  .kick{font-size:1em;font-weight:bold;letter-spacing:.35em;text-transform:uppercase;color:var(--teal);margin-bottom:1.4em;}
+  h2.big{font-size:3.6em;line-height:1.12;font-weight:bold;}
+  p.lead{font-size:1.3em;line-height:1.55;color:var(--pale);margin-top:1.3em;max-width:52em;}
+  p.lead b{color:#fff;}
+  .tealtxt{color:var(--teal);} .ambertxt{color:var(--amber);}
+
+  /* decorative background */
+  .decor{position:absolute;border-radius:50%;pointer-events:none;z-index:1;}
+  .dc1{width:42em;height:42em;background:var(--ink2);top:-16em;right:-14em;}
+  .dc2{width:24em;height:24em;background:var(--ink3);top:-6em;right:-4em;}
+  .dc3{width:34em;height:34em;background:var(--ink2);bottom:-18em;left:-14em;}
+  .gridbg{position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.05) .12em, transparent .12em);background-size:3.2em 3.2em;pointer-events:none;z-index:1;}
+  .screen>*{position:relative;z-index:5;}
+  .screen>.decor,.screen>.pulse,.screen>.whisper,.screen>.gridbg{position:absolute;z-index:1;}
+
+  /* fade steps inside a screen */
+  .st{opacity:0;transform:translateY(1.6em);transition:opacity .7s ease,transform .7s ease;}
+  .screen.on .st{opacity:1;transform:none;}
+  .screen.on .s1{transition-delay:.1s}.screen.on .s2{transition-delay:.25s}.screen.on .s3{transition-delay:.4s}
+  .screen.on .s4{transition-delay:.55s}.screen.on .s5{transition-delay:.7s}.screen.on .s6{transition-delay:.85s}
+
+  /* ---------- S0 cold open ---------- */
+  #s0{background:#080f10;}
+  .pulse{position:absolute;top:50%;left:50%;border:.16em solid rgba(0,169,172,.25);border-radius:50%;transform:translate(-50%,-50%);animation:pulse 3.2s ease-out infinite;z-index:1;}
+  .p1{width:34em;height:34em;} .p2{width:34em;height:34em;animation-delay:1.05s;} .p3{width:34em;height:34em;animation-delay:2.1s;}
+  @keyframes pulse{0%{width:16em;height:16em;opacity:0}12%{opacity:.8}100%{width:58em;height:58em;opacity:0}}
+  .clock{font-size:11em;font-weight:bold;color:var(--teal);letter-spacing:.02em;font-variant-numeric:tabular-nums;text-shadow:0 0 .5em rgba(0,169,172,.4);line-height:1;}
+  .clock .cd{animation:blink 1.6s steps(1) infinite;}
+  @keyframes blink{50%{opacity:.2}}
+  .openline{font-size:1.35em;color:var(--pale);margin-top:1.6em;line-height:1.65;}
+  .openline b{color:#fff;}
+
+  /* ---------- S1 promises ---------- */
+  .wall{display:grid;grid-template-columns:repeat(4,1fr);gap:1.1em;margin-top:2.4em;width:100%;max-width:76em;}
+  .promise{background:var(--ink2);border:.09em solid rgba(255,255,255,.08);border-radius:.8em;padding:1.7em 1.5em;position:relative;cursor:pointer;transition:transform .2s;min-height:9.5em;}
+  .promise:hover{transform:translateY(-.3em);}
+  .promise .who{font-size:.85em;letter-spacing:.2em;text-transform:uppercase;color:var(--pale2);margin-bottom:.8em;}
+  .promise .say{font-size:1.25em;font-weight:bold;line-height:1.35;}
+  .promise .stamp{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-8deg) scale(1.6);opacity:0;transition:opacity .35s ease,transform .35s ease;pointer-events:none;}
+  .promise .stamp span{border:.2em solid var(--crim);color:var(--crim);background:rgba(8,15,16,.85);padding:.4em 1em;font-weight:bold;letter-spacing:.15em;font-size:1em;border-radius:.35em;white-space:nowrap;}
+  .promise.stamped .stamp{opacity:1;transform:translate(-50%,-50%) rotate(-8deg) scale(1);}
+  .promise.stamped .say,.promise.stamped .who{opacity:.4;}
+  .wallbtns{display:flex;gap:1em;margin-top:2.2em;justify-content:center;}
+  .ctl{background:var(--ink3);border:none;color:#fff;border-radius:2em;padding:.8em 1.9em;font-size:1.05em;cursor:pointer;transition:.2s;font-weight:bold;}
+  .ctl:hover{background:var(--teal);color:var(--ink);}
+  .ctl.ghost{background:none;border:.12em solid rgba(255,255,255,.25);font-weight:normal;color:var(--pale);}
+  .ctl.ghost:hover{border-color:#fff;color:#fff;background:none;}
+  .wallnote{font-size:.95em;color:var(--pale2);margin-top:1.4em;letter-spacing:.08em;}
+
+  /* ---------- S2 wound ---------- */
+  .whisper{position:absolute;font-weight:bold;color:rgba(255,255,255,.05);white-space:nowrap;z-index:1;}
+
+  /* ---------- S3 mirror ---------- */
+  .mirror{display:flex;gap:2.5em;margin-top:2.6em;width:100%;max-width:78em;align-items:stretch;}
+  .chartcard{background:var(--ink2);border-radius:1em;padding:2em 2.2em;flex:1.1;text-align:left;}
+  .chartcard h4{font-size:1.05em;letter-spacing:.15em;text-transform:uppercase;color:var(--pale2);margin-bottom:1.6em;}
+  .bar{margin-bottom:1.5em;}
+  .bar .bl{display:flex;justify-content:space-between;font-size:1.05em;margin-bottom:.5em;}
+  .bar .bl b{font-variant-numeric:tabular-nums;}
+  .bar .track{height:1.1em;background:rgba(255,255,255,.08);border-radius:.55em;overflow:hidden;}
+  .bar .fill{height:100%;border-radius:.55em;width:0;transition:width 1.2s cubic-bezier(.2,.7,.3,1);}
+  .statstack{flex:1;display:flex;flex-direction:column;gap:1em;}
+  .stat{background:var(--ink2);border-radius:1em;padding:1.3em 1.7em;display:flex;align-items:center;gap:1.5em;text-align:left;}
+  .stat .v{font-size:2.1em;font-weight:bold;color:var(--crim);min-width:3.4em;font-variant-numeric:tabular-nums;}
+  .stat .v.warn{color:var(--amber);}
+  .stat .t{font-size:1em;color:var(--pale);line-height:1.45;}
+  .stat .t b{color:#fff;}
+
+  /* ---------- S4 insight / gap ---------- */
+  .gapviz{display:flex;gap:1.4em;margin-top:2.6em;width:100%;max-width:64em;align-items:flex-end;justify-content:center;}
+  .gcol{flex:1;max-width:26em;}
+  .gcol .gbar{border-radius:.8em .8em 0 0;width:100%;transition:height 1.1s cubic-bezier(.2,.7,.3,1);display:flex;align-items:flex-start;justify-content:center;padding-top:1em;font-weight:bold;font-size:1.1em;height:0;}
+  .gcol .glab{margin-top:1em;font-size:1.05em;color:var(--pale);}
+  .gp .gbar{background:linear-gradient(180deg,#3d5a5a,#243b3b);color:var(--pale);}
+  .ga .gbar{background:linear-gradient(180deg,var(--teal),var(--teald));color:var(--ink);}
+
+  /* ---------- S5 definition ---------- */
+  .defrow{display:flex;gap:1.2em;margin-top:2.6em;justify-content:center;width:100%;max-width:72em;}
+  .defc{background:var(--ink2);border-radius:1em;padding:1.8em 1.4em;flex:1;}
+  .defc .ic{width:3.4em;height:3.4em;margin:0 auto 1em;border-radius:50%;background:var(--ink3);display:flex;align-items:center;justify-content:center;}
+  .defc .ic svg{width:1.7em;height:1.7em;stroke:var(--teal);fill:none;stroke-width:2;}
+  .defc b{font-size:1.15em;}
+  .defc p{font-size:.95em;color:var(--pale2);margin-top:.5em;line-height:1.45;}
+
+  /* ---------- S6 reveal ---------- */
+  #s6{background:radial-gradient(ellipse at 68% 22%, #12302F 0%, #0F1B1C 58%);}
+  .revealword{font-size:8.2em;font-weight:bold;line-height:1.0;letter-spacing:.01em;}
+  .revealword .w2{color:var(--teal);}
+  .payoffcard{margin-top:2em;background:var(--ink3);border-radius:1em;padding:1.8em 2.6em;display:inline-block;max-width:60em;}
+  .payoffcard .line{font-size:2.1em;font-style:italic;font-weight:bold;}
+  .payoffcard .line span{color:var(--teal);font-style:normal;font-size:.6em;font-weight:bold;vertical-align:.25em;margin-right:.8em;letter-spacing:.1em;}
+  .payoffcard .rule{font-size:1em;color:var(--pale);margin-top:.9em;line-height:1.5;}
+  .payoffcard .rule b{color:var(--amber);}
+
+  /* ---------- S7 receipt ---------- */
+  .rtabs{display:flex;gap:.7em;margin-top:1.8em;justify-content:center;}
+  .rtab{background:var(--ink2);color:var(--pale);border:.1em solid rgba(255,255,255,.16);border-radius:2em;padding:.6em 1.5em;font-size:1em;cursor:pointer;transition:.2s;}
+  .rtab.on,.rtab:hover{background:var(--teal);color:var(--ink);border-color:var(--teal);font-weight:bold;}
+  .receiptwrap{display:flex;gap:3em;justify-content:center;align-items:center;margin-top:1.6em;width:100%;max-width:76em;}
+  .phone{background:#0a1415;border:.35em solid #1e3233;border-radius:2.2em;padding:1.6em 1.2em;box-shadow:0 2em 5em rgba(0,0,0,.55);}
+  .receipt{background:#fbfdfd;color:var(--ink);width:26em;border-radius:.7em;padding:1.6em 1.5em;font-variant-numeric:tabular-nums;text-align:left;}
+  .receipt .rh{font-size:.85em;font-weight:bold;letter-spacing:.25em;color:var(--teald);text-transform:uppercase;display:flex;justify-content:space-between;border-bottom:.18em solid var(--teal);padding-bottom:.8em;}
+  .rline{display:flex;gap:.9em;padding:.75em 0;border-bottom:.09em dashed #d8e0e0;opacity:0;transform:translateY(.5em);transition:opacity .45s ease,transform .45s ease;align-items:baseline;}
+  .rline.on{opacity:1;transform:none;}
+  .rline .amt{font-weight:bold;color:var(--amberd);min-width:4.6em;font-size:1.05em;}
+  .rline .txt{font-size:.88em;color:var(--body);line-height:1.4;}
+  .receipt .rf{margin-top:.9em;font-size:.8em;font-style:italic;font-weight:bold;color:var(--teald);}
+  .rside{max-width:26em;text-align:left;}
+  .rrule{display:flex;gap:1em;margin-top:1.3em;align-items:flex-start;}
+  .rrule .n{width:2.1em;height:2.1em;border-radius:50%;background:var(--ink3);color:var(--teal);font-weight:bold;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1em;}
+  .rrule p{font-size:1em;color:var(--pale);line-height:1.5;}
+  .rrule p b{color:#fff;}
+
+  /* ---------- S8 pillars ---------- */
+  .pillrow{display:flex;gap:1em;margin-top:2.2em;width:100%;max-width:80em;}
+  .pcard{background:var(--ink2);border-radius:.9em;padding:1.5em 1.2em;flex:1;cursor:pointer;border-top:.35em solid var(--teal);transition:.25s;text-align:center;}
+  .pcard:hover{background:var(--ink3);transform:translateY(-.3em);}
+  .pcard.sel{background:var(--teal);}
+  .pcard.sel h3,.pcard.sel .m{color:var(--ink);}
+  .pcard.sel .pic svg{stroke:var(--ink);}
+  .pcard .pic{width:3em;height:3em;margin:0 auto .8em;}
+  .pcard .pic svg{width:100%;height:100%;stroke:var(--teal);fill:none;stroke-width:1.7;}
+  .pcard h3{font-size:1.35em;}
+  .pcard .m{font-size:.8em;color:var(--pale2);font-weight:bold;margin-top:.4em;text-transform:uppercase;letter-spacing:.1em;line-height:1.3;}
+  .pdetail{margin-top:1.6em;background:var(--ink2);border-radius:1em;padding:1.8em 2.4em;width:100%;max-width:80em;display:flex;gap:2.5em;align-items:center;text-align:left;min-height:9.5em;}
+  .pdetail .spine{flex:1.1;font-size:1.5em;font-weight:bold;font-style:italic;line-height:1.35;}
+  .pdetail .body{flex:1.6;font-size:1.02em;color:var(--pale);line-height:1.55;}
+  .pdetail .body b{color:var(--amber);}
+
+  /* ---------- S9 rules ---------- */
+  .rulegrid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.1em;margin-top:2.4em;width:100%;max-width:80em;}
+  .rulec{background:var(--ink2);border-radius:.9em;padding:1.8em 1.5em;text-align:left;border-top:.35em solid var(--teal);}
+  .rulec.a{border-top-color:var(--amber);}
+  .rulec .n{font-size:2.4em;font-weight:bold;color:var(--teal);line-height:1;}
+  .rulec.a .n{color:var(--amber);}
+  .rulec h4{font-size:1.2em;margin:.6em 0 .5em;}
+  .rulec p{font-size:.95em;color:var(--pale);line-height:1.5;}
+  .posture{margin-top:1.8em;background:var(--ink3);border-radius:.9em;padding:1.3em 2em;font-size:1.15em;max-width:80em;width:100%;}
+  .posture b{color:var(--teal);}
+
+  /* ---------- S10 road ---------- */
+  .roadrow{display:flex;gap:1.2em;margin-top:2.6em;width:100%;max-width:80em;align-items:stretch;}
+  .roadc{flex:1;background:var(--ink2);border-radius:1em;padding:1.8em 1.6em;text-align:left;position:relative;}
+  .roadc .ph{font-size:.85em;letter-spacing:.2em;text-transform:uppercase;color:var(--amber);font-weight:bold;}
+  .roadc h4{font-size:1.4em;margin:.5em 0 .7em;}
+  .roadc p{font-size:.98em;color:var(--pale);line-height:1.55;}
+  .roadc:after{content:'\2192';position:absolute;right:-1.05em;top:50%;transform:translateY(-50%);color:var(--teal);font-size:1.6em;z-index:5;}
+  .roadc:last-child:after{display:none;}
+
+  /* ---------- S11 close ---------- */
+  #s11{background:radial-gradient(ellipse at 50% 30%, #12302F 0%, #0F1B1C 62%);}
+  .bigbtn{margin-top:2.4em;background:var(--teal);color:var(--ink);font-weight:bold;font-size:1.25em;padding:1em 2.6em;border-radius:3em;cursor:pointer;border:none;transition:.25s;letter-spacing:.03em;}
+  .bigbtn:hover{background:#fff;}
+
+  /* ---------- MENU overlay ---------- */
+  #menu{position:absolute;inset:0;background:rgba(6,12,13,.96);z-index:60;display:none;flex-direction:column;padding:5em 6em;}
+  #menu.on{display:flex;}
+  #menu h3{font-size:2em;margin-bottom:.4em;}
+  #menu .msub{color:var(--pale2);font-size:1.05em;margin-bottom:2em;}
+  .mgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:1em;overflow:auto;}
+  .mbtn{background:var(--ink2);border:.09em solid rgba(255,255,255,.1);border-radius:.8em;padding:1.3em 1.4em;color:#fff;text-align:left;cursor:pointer;transition:.2s;}
+  .mbtn:hover{background:var(--ink3);border-color:var(--teal);}
+  .mbtn .mn{font-size:.8em;color:var(--teal);font-weight:bold;letter-spacing:.15em;}
+  .mbtn .mt{font-size:1.1em;font-weight:bold;margin-top:.4em;}
+  .mbtn.hubm .mn{color:var(--amber);}
+  .mclose{position:absolute;top:2em;right:2.6em;background:none;border:none;color:var(--pale);font-size:2.2em;cursor:pointer;}
+  .mclose:hover{color:#fff;}
+</style>
+</head>
+<body>
+<!-- ============ ACCESS GATE ============ -->
+<style>
+  #gate{position:fixed;inset:0;z-index:999;background:#0F1B1C;display:flex;align-items:center;justify-content:center;overflow:hidden;transition:opacity .6s ease;}
+  #gate.off{opacity:0;pointer-events:none;}
+  #gate .gdec{position:absolute;border-radius:50%;pointer-events:none;}
+  #gate .gd1{width:60vmin;height:60vmin;background:#12302F;top:-22vmin;right:-16vmin;}
+  #gate .gd2{width:34vmin;height:34vmin;background:#0D4A4B;top:-8vmin;right:-5vmin;}
+  #gate .gd3{width:48vmin;height:48vmin;background:#12302F;bottom:-24vmin;left:-16vmin;}
+  #gate .ggrid{position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.05) 1px, transparent 1px);background-size:34px 34px;}
+  .gcard{position:relative;z-index:5;width:min(92vw,420px);background:rgba(21,48,47,.65);border:1px solid #2B4A48;border-radius:18px;padding:44px 40px 38px;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.45);}
+  .gcard .glogo{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:26px;font-weight:bold;font-size:19px;color:#fff;letter-spacing:.03em;}
+  .gcard .glogo span{color:#00A9AC;font-weight:normal;}
+  .gkick{font-size:11px;font-weight:bold;letter-spacing:.35em;text-transform:uppercase;color:#00A9AC;margin-bottom:10px;}
+  .gtitle{font-size:26px;font-weight:bold;color:#fff;line-height:1.15;margin-bottom:6px;}
+  .gsub{font-size:13px;color:#8FB3B2;margin-bottom:28px;}
+  .gfield{text-align:left;margin-bottom:14px;}
+  .gfield label{display:block;font-size:10px;font-weight:bold;letter-spacing:.25em;text-transform:uppercase;color:#8FB3B2;margin-bottom:6px;}
+  .gfield input{width:100%;background:#0F1B1C;border:1px solid #2B4A48;border-radius:10px;color:#fff;font-size:15px;padding:12px 14px;outline:none;transition:.2s;font-family:inherit;}
+  .gfield input:focus{border-color:#00A9AC;}
+  .gbtn{width:100%;margin-top:10px;background:#00A9AC;border:none;border-radius:10px;color:#0F1B1C;font-size:14px;font-weight:bold;letter-spacing:.2em;text-transform:uppercase;padding:14px;cursor:pointer;transition:.2s;}
+  .gbtn:hover{background:#fff;}
+  .gerr{font-size:12.5px;color:#FFB81C;margin-top:14px;min-height:16px;visibility:hidden;}
+  .gerr.show{visibility:visible;}
+  .gshake{animation:gshake .4s;}
+  @keyframes gshake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+</style>
+<div id="gate">
+  <div class="gdec gd1"></div><div class="gdec gd2"></div><div class="gdec gd3"></div><div class="ggrid"></div>
+  <form class="gcard" id="gform" autocomplete="off">
+    <div class="glogo"><svg viewBox="0 0 48 48" style="width:34px;height:34px"><rect x="2" y="2" width="44" height="44" rx="12" fill="#00A9AC"/><path d="M24 34 V16 M24 16 l-6.5 6.5 M24 16 l6.5 6.5" stroke="#fff" stroke-width="3.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="36" cy="12" r="3.2" fill="#FFB81C"/></svg>FNB <span>Brand Experience</span></div>
+    <div class="gkick">Private preview</div>
+    <div class="gtitle">Help Shows Up</div>
+    <div class="gsub">This experience is restricted. Sign in to continue.</div>
+    <div class="gfield"><label for="guser">Username</label><input id="guser" type="text" spellcheck="false" autocapitalize="none"></div>
+    <div class="gfield"><label for="gpass">Password</label><input id="gpass" type="password"></div>
+    <button class="gbtn" type="submit">Enter</button>
+    <div class="gerr" id="gerr">That did not match. Please try again.</div>
+  </form>
+</div>
+<script>
+(function(){
+  var locked=true;
+  var H=function(s,seed){var h1=0xdeadbeef^seed,h2=0x41c6ce57^seed;for(var i=0,ch;i<s.length;i++){ch=s.charCodeAt(i);h1=Math.imul(h1^ch,2654435761);h2=Math.imul(h2^ch,1597334677);}h1=Math.imul(h1^(h1>>>16),2246822507);h1^=Math.imul(h2^(h2>>>13),3266489909);h2=Math.imul(h2^(h2>>>16),2246822507);h2^=Math.imul(h1^(h1>>>13),3266489909);return 4294967296*(2097151&h2)+(h1>>>0);};
+  var blocker=function(e){if(locked){e.stopPropagation();}};
+  document.addEventListener('keydown',blocker,true);
+  var form=document.getElementById('gform'),gate=document.getElementById('gate'),err=document.getElementById('gerr');
+  form.addEventListener('submit',function(e){
+    e.preventDefault();
+    var u=document.getElementById('guser').value.trim().toLowerCase();
+    var p=document.getElementById('gpass').value;
+    if(H(u,91)===8976632621447637&&H(p,91)===5153408055052525){
+      locked=false;
+      gate.classList.add('off');
+      setTimeout(function(){gate.remove();},700);
+    }else{
+      err.classList.add('show');
+      form.classList.remove('gshake');void form.offsetWidth;form.classList.add('gshake');
+      document.getElementById('gpass').value='';
+      document.getElementById('gpass').focus();
+    }
+  });
+  window.addEventListener('load',function(){document.getElementById('guser').focus();});
+})();
+</script>
+<div id="stage">
+
+  <div class="topbar">
+    <div class="logo">
+      <svg viewBox="0 0 48 48" style="width:2.4em;height:2.4em"><rect x="2" y="2" width="44" height="44" rx="12" fill="#00A9AC"/><path d="M24 34 V16 M24 16 l-6.5 6.5 M24 16 l6.5 6.5" stroke="#fff" stroke-width="3.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="36" cy="12" r="3.2" fill="#FFB81C"/></svg>
+      <div class="nm">FNB <span id="modeName">Brand Experience</span></div>
+    </div>
+    <div class="actlabel" id="actlabel">The cold open</div>
+    <button class="menubtn" onclick="toggleMenu(true)">MENU</button>
+  </div>
+
+  <!-- ============ JOURNEY SCREENS ============ -->
+
+  <section class="screen" id="s0">
+    <div class="pulse p1"></div><div class="pulse p2"></div><div class="pulse p3"></div>
+    <div class="clock st s1">03:41<span class="cd" style="color:var(--teal)">&#8226;</span></div>
+    <p class="openline st s2">A Tuesday morning. A garage forecourt. A card skimmer touches a customer&rsquo;s card.</p>
+    <p class="openline st s3"><b>Ninety seconds later, the card is blocked. She is asleep. She finds out at breakfast.</b></p>
+    <p class="openline st s4" style="color:var(--pale2)">Hold that moment. It contains everything you are about to see.</p>
+  </section>
+
+  <section class="screen" id="s1">
+    <div class="decor dc1"></div><div class="decor dc2"></div>
+    <div class="kick st s1">Act I &nbsp;|&nbsp; The country of broken promises</div>
+    <h2 class="big st s2">South Africans are the most<br>promised-at people in the economy.</h2>
+    <p class="lead st s3">Every institution runs the same sentence. Here are the promises. <b>Click any card</b>, or press the button, to see what experience taught people to expect.</p>
+    <div class="wall st s4">
+      <div class="promise" onclick="this.classList.toggle('stamped')"><div class="who">The banks</div><div class="say">&ldquo;We are with you.&rdquo;</div><div class="stamp"><span>NEVER ARRIVED</span></div></div>
+      <div class="promise" onclick="this.classList.toggle('stamped')"><div class="who">The insurers</div><div class="say">&ldquo;We&rsquo;ve got your back.&rdquo;</div><div class="stamp"><span>SEE CLAUSE 14.2</span></div></div>
+      <div class="promise" onclick="this.classList.toggle('stamped')"><div class="who">The telcos</div><div class="say">&ldquo;Connecting what matters.&rdquo;</div><div class="stamp"><span>OUT OF BUNDLE</span></div></div>
+      <div class="promise" onclick="this.classList.toggle('stamped')"><div class="who">The institutions</div><div class="say">&ldquo;Together we can.&rdquo;</div><div class="stamp"><span>STILL WAITING</span></div></div>
+    </div>
+    <div class="wallbtns st s5">
+      <button class="ctl" onclick="stampAll()">What actually arrived?</button>
+      <button class="ctl ghost" onclick="resetStamps()">Show the promises again</button>
+    </div>
+    <div class="wallnote st s6">The result is not cynicism. It is trained disappointment: intention and arrival are two different products, and people are usually sold the first one.</div>
+  </section>
+
+  <section class="screen" id="s2">
+    <span class="whisper" style="top:12%;left:6%;font-size:2.6em;transform:rotate(-4deg)">&ldquo;We are with you&rdquo;</span>
+    <span class="whisper" style="top:22%;right:8%;font-size:2.2em;transform:rotate(3deg)">&ldquo;We care&rdquo;</span>
+    <span class="whisper" style="bottom:20%;left:10%;font-size:2.4em;transform:rotate(2deg)">&ldquo;Together we can&rdquo;</span>
+    <span class="whisper" style="bottom:12%;right:6%;font-size:2em;transform:rotate(-3deg)">&ldquo;Here for you&rdquo;</span>
+    <div class="kick st s1">The wound under every focus group</div>
+    <h2 class="big st s2" style="font-size:4.2em">&ldquo;Everyone tells me they&rsquo;ll help me.<br><span class="tealtxt">Nobody actually shows up.&rdquo;</span></h2>
+    <p class="lead st s3">Not a complaint about FNB specifically. A verdict on the category, which is exactly what makes it an opportunity: <b>the verdict is waiting to be overturned, once, by one institution, with evidence.</b></p>
+  </section>
+
+  <section class="screen" id="s3">
+    <div class="decor dc3"></div>
+    <div class="kick st s1">Act I &nbsp;|&nbsp; The mirror</div>
+    <h2 class="big st s2">And FNB? Admired more than felt.</h2>
+    <div class="mirror st s3">
+      <div class="chartcard">
+        <h4>The 2026 audit: how customers score us</h4>
+        <div class="bar"><div class="bl"><span>Quality</span><b>72</b></div><div class="track"><div class="fill" data-w="72%" style="background:var(--teal)"></div></div></div>
+        <div class="bar"><div class="bl"><span>Value for money</span><b>53</b></div><div class="track"><div class="fill" data-w="53%" style="background:var(--amber)"></div></div></div>
+        <div class="bar"><div class="bl"><span>Satisfaction</span><b>49</b></div><div class="track"><div class="fill" data-w="49%" style="background:var(--crim)"></div></div></div>
+        <p style="font-size:.95em;color:var(--pale2);margin-top:1.2em;line-height:1.5">Excellent, expensive, and indifferent: the profile of a bank admired more than felt.</p>
+      </div>
+      <div class="statstack">
+        <div class="stat"><div class="v">19%</div><div class="t"><b>Churn, up from 14%.</b> Net switching gain collapsed from +29 to +5. Drivers: perceived value, unresolved service.</div></div>
+        <div class="stat"><div class="v warn">0/9</div><div class="t"><b>Entry market regions led.</b> Read as aspirational, not approachable, while the pipeline goes elsewhere.</div></div>
+        <div class="stat"><div class="v warn">30+</div><div class="t"><b>Help lines in market.</b> The word everywhere, the meaning thinning. Help had become wallpaper.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="screen" id="s4">
+    <div class="kick st s1">Act II &nbsp;|&nbsp; The insight</div>
+    <h2 class="big st s2">In the country of broken promises,<br><span class="ambertxt">the arrival</span> is the scarcest asset in the market.</h2>
+    <div class="gapviz st s3">
+      <div class="gcol gp"><div class="gbar" data-h="16em">Everyone</div><div class="glab">Manufacturing <b>promises</b></div></div>
+      <div class="gcol ga"><div class="gbar" data-h="5em">Nobody</div><div class="glab">Manufacturing <b>proof</b></div></div>
+    </div>
+    <p class="lead st s4">So FNB retires the promise, &ldquo;Help Changes Everything&rdquo;, with honour, and asks a different question entirely: <b>what if a bank stopped promising?</b></p>
+  </section>
+
+  <section class="screen" id="s5">
+    <div class="decor dc1"></div>
+    <div class="kick st s1">Act III &nbsp;|&nbsp; The definition</div>
+    <h2 class="big st s2">Help is an event.<br>It either happened or it didn&rsquo;t.</h2>
+    <p class="lead st s3">You know it happened because something got easier, cheaper, faster or safer, <b>and you can point at it.</b></p>
+    <div class="defrow st s4">
+      <div class="defc"><div class="ic"><svg viewBox="0 0 24 24"><path d="M4 12h16M14 6l6 6-6 6"/></svg></div><b>Easier</b><p>The switch done for you, with a completion receipt.</p></div>
+      <div class="defc"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5c0-1.4 1.1-2.5 2.5-2.5s2.5 1.1 2.5 2.5-1.1 2-2.5 2.5-2.5 1.1-2.5 2.5 1.1 2.5 2.5 2.5 2.5-1.1 2.5-2.5"/></svg></div><b>Cheaper</b><p>The fee that never arrived, because a warning got there first.</p></div>
+      <div class="defc"><div class="ic"><svg viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg></div><b>Faster</b><p>Money that landed in nineteen seconds, clock shown.</p></div>
+      <div class="defc"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6z"/><path d="M9 12l2.2 2.2L15.5 10"/></svg></div><b>Safer</b><p>The card blocked at 03:41, while she slept.</p></div>
+    </div>
+    <p class="lead st s5" style="margin-top:1.6em">Accept the definition, and marketing becomes the evidence department. And the idea, when it comes, is short.</p>
+  </section>
+
+  <section class="screen" id="s6">
+    <div class="kick st s1">The brand idea</div>
+    <div class="revealword st s2">HELP<br><span class="w2">SHOWS UP</span></div>
+    <p class="lead st s3">Help proven by arrival. Engineered in the moments that matter. Evidenced in receipts and timestamps. Aired only when verified.</p>
+    <div class="payoffcard st s4">
+      <div class="line"><span>FNB</span>&ldquo;Help shows up.&rdquo;</div>
+      <div class="rule">The payoff <b>signs, it never headlines</b>. It appears after proof, locked to the logo, the way a signature appears after a letter. The first execution that leads with it has broken the strategy.</div>
+    </div>
+  </section>
+
+  <section class="screen" id="s7">
+    <div class="kick st s1">Act IV &nbsp;|&nbsp; The proof</div>
+    <h2 class="big st s2" style="font-size:2.9em">Evidence you can hold: the Helped receipt.</h2>
+    <div class="rtabs st s3">
+      <button class="rtab on" data-r="retail">Sipho, retail</button>
+      <button class="rtab" data-r="entry">Nomvula, entry</button>
+      <button class="rtab" data-r="sme">Thabo, SME</button>
+    </div>
+    <div class="receiptwrap st s4">
+      <div class="phone"><div class="receipt">
+        <div class="rh"><span>Helped</span><span id="rmon">March</span></div>
+        <div id="rlines"></div>
+        <div class="rf">FNB. Help shows up.</div>
+      </div></div>
+      <div class="rside">
+        <div class="rrule"><div class="n">1</div><p><b>It never flatters.</b> Internal audit owns its accuracy; one inflated number kills the instrument.</p></div>
+        <div class="rrule"><div class="n">2</div><p><b>The misses print too.</b> A missed standard appears with what we did about it.</p></div>
+        <div class="rrule"><div class="n">3</div><p><b>It does the advocating.</b> We never ask for recommendations. People show the receipt.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="screen" id="s8">
+    <div class="kick st s1">Act IV &nbsp;|&nbsp; The system</div>
+    <h2 class="big st s2" style="font-size:2.9em">Five moments. Five pillars. Five proof devices.</h2>
+    <div class="pillrow st s3">
+      <div class="pcard" data-p="0"><div class="pic"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6z"/></svg></div><h3>Protection</h3><div class="m">When harm is coming</div></div>
+      <div class="pcard" data-p="1"><div class="pic"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg></div><h3>Value</h3><div class="m">When money is tight</div></div>
+      <div class="pcard" data-p="2"><div class="pic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.6 2.6L16.5 9"/></svg></div><h3>Resolution</h3><div class="m">When something breaks</div></div>
+      <div class="pcard" data-p="3"><div class="pic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3c.3-1.3 1.3-2.3 2.7-2.3 1.5 0 2.8 1.1 2.8 2.6 0 2.2-2.9 2.2-2.9 4.4M12 17.5v.2"/></svg></div><h3>Clarity</h3><div class="m">When an answer is owed</div></div>
+      <div class="pcard" data-p="4"><div class="pic"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 13V8.5M12 2.5h0M10 2.5h4"/></svg></div><h3>Speed</h3><div class="m">When time is everything</div></div>
+    </div>
+    <div class="pdetail st s4">
+      <div class="spine" id="pspine"></div>
+      <div class="body" id="pbody"></div>
+    </div>
+  </section>
+
+  <section class="screen" id="s9">
+    <div class="decor dc3"></div>
+    <div class="kick st s1">Act IV &nbsp;|&nbsp; The law</div>
+    <h2 class="big st s2" style="font-size:2.9em">Four rules. Every brief. Every review. Every sentence.</h2>
+    <div class="rulegrid st s3">
+      <div class="rulec"><div class="n">1</div><h4>Stay inside help</h4><p>One idea, held for years. Distinctive assets frozen through 2030. Creative wear-out is a myth; inconsistency is the killer.</p></div>
+      <div class="rulec"><div class="n">2</div><h4>Prove, don&rsquo;t promise</h4><p>Campaigns are verified arrival stories: named customer, timestamp, receipt. No evidence, no airtime.</p></div>
+      <div class="rulec"><div class="n">3</div><h4>Stay humble</h4><p>Claim exactly, never an inch more. The brand publishes only what the bank makes true.</p></div>
+      <div class="rulec a"><div class="n">4</div><h4>The entry acid test</h4><p>If a customer new to banking cannot understand it first read, in plain language, it does not go out.</p></div>
+    </div>
+    <div class="posture st s4"><b>The posture:</b> the customer is the hero of the story. The bank is the hand. The friend who arrives with a bakkie when you are moving, not the one who texts &ldquo;let me know if you need anything.&rdquo;</div>
+  </section>
+
+  <section class="screen" id="s10">
+    <div class="kick st s1">Act V &nbsp;|&nbsp; The road</div>
+    <h2 class="big st s2" style="font-size:2.9em">Inside first. Then receipts. Then the era of proof.</h2>
+    <div class="roadrow st s3">
+      <div class="roadc"><div class="ph">Months 0 to 9</div><h4>Inside first</h4><p>The bank sets its arrival standards: what must arrive, and by when, measured from day one. Every fee, hold and decline learns to explain itself in one plain sentence. Inside, the word helped starts requiring proof. Staff see their receipts before customers do. Nothing airs.</p></div>
+      <div class="roadc"><div class="ph">Months 9 to 24</div><h4>The receipts</h4><p>The Helped receipt reaches every customer, segment by segment. People start seeing what was handled while they slept. eBucks becomes value returned, counted in rand. nav&gt;&gt; journeys (home, car, money) get progress receipts: you always know what is done and what comes next. The first proof stories air, signed, never headlined.</p></div>
+      <div class="roadc"><div class="ph">Years 2 to 5</div><h4>The era of proof</h4><p>The arrival standards go public: what will arrive, by when, in writing. The help record becomes something anyone can check. The category follows; we hold the receipts.</p></div>
+    </div>
+    <p class="lead st s4">The sequencing rule: <b>no external claim goes out before its internal standard has held for one full quarter.</b></p>
+  </section>
+
+  <section class="screen" id="s11">
+    <div class="kick st s1">By 2030</div>
+    <h2 class="big st s2">When South Africans are asked what real help<br>from a bank looks like, <span class="tealtxt">they point at something<br>that happened.</span></h2>
+    <p class="lead st s3" style="font-style:italic;font-size:1.7em;color:#fff;margin-top:1.6em">FNB. &ldquo;Help shows up.&rdquo;</p>
+    <button class="bigbtn st s4" onclick="enterHub()">Enter the brand hub &#8594;</button>
+    <p class="st s5" style="font-size:.95em;color:var(--pale2);margin-top:1.3em">The working reference: idea, brand house, voice, audiences, sub brands, messaging, road and library.</p>
+  </section>
+
+  <!-- ============ HUB ============ -->
+  <div id="hub" style="display:none;position:absolute;inset:0;z-index:30;">
+    <style>
+      #hub{font-size:1em;}
+      .hubwrap{position:absolute;inset:0;top:5.2em;display:flex;}
+      .rail{width:16em;background:#0b1617;padding:1.6em 1em;display:flex;flex-direction:column;gap:.45em;flex-shrink:0;}
+      .rbtn{background:none;border:none;color:var(--pale);text-align:left;font-size:1.05em;padding:.85em 1.2em;border-radius:.6em;cursor:pointer;transition:.18s;display:flex;align-items:center;gap:.8em;}
+      .rbtn svg{width:1.25em;height:1.25em;stroke:currentColor;fill:none;stroke-width:1.8;flex-shrink:0;}
+      .rbtn:hover{background:rgba(255,255,255,.06);color:#fff;}
+      .rbtn.on{background:var(--teal);color:var(--ink);font-weight:bold;}
+      .rail .rsp{flex:1;}
+      .rbtn.replay{border:.1em solid rgba(255,255,255,.2);}
+      .hcontent{flex:1;background:var(--bg);color:var(--ink);position:relative;display:flex;flex-direction:column;}
+      .hscroll{flex:1;overflow-y:auto;padding:2.2em 2.8em 1.6em;}
+      .hscroll::-webkit-scrollbar{width:.5em;} .hscroll::-webkit-scrollbar-thumb{background:#c9d2d1;border-radius:.25em;}
+      .hfoot{height:3.2em;background:var(--ink);color:var(--pale2);font-size:.92em;display:flex;align-items:center;justify-content:space-between;padding:0 2.2em;flex-shrink:0;}
+      .hfoot b{color:#fff;}
+      .hp{display:none;} .hp.on{display:block;}
+      .hp h2{font-size:2em;margin-bottom:.15em;color:var(--ink);}
+      .hp .sub{color:var(--mut);font-size:1.05em;margin-bottom:1.5em;}
+      .hgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:1em;}
+      .hgrid.two{grid-template-columns:repeat(2,1fr);}
+      .hcard{background:#fff;border:.08em solid var(--line);border-radius:.8em;padding:1.3em 1.4em;}
+      .hcard.teal{background:#E0F4F4;border-color:#c2e7e7;}
+      .hcard.dark{background:var(--ink);color:#fff;border:none;}
+      .hcard.amber{background:#FDEBD2;border-color:#f3d9b0;}
+      .hcard h4{font-size:1.05em;margin-bottom:.55em;color:var(--teald);}
+      .hcard.dark h4{color:var(--teal);}
+      .hcard.amber h4{color:#8A5200;}
+      .hcard p,.hcard li{font-size:.92em;line-height:1.55;color:var(--body);}
+      .hcard.dark p{color:var(--pale);}
+      .hcard ul{padding-left:1.2em;}
+      .hquote{background:var(--ink);color:#fff;border-radius:.9em;padding:1.6em 2em;margin-bottom:1em;}
+      .hquote .q{font-size:1.45em;font-weight:bold;line-height:1.3;}
+      .hquote .a{color:var(--teal);font-size:.85em;margin-top:.7em;font-weight:bold;letter-spacing:.12em;text-transform:uppercase;}
+      .htable{width:100%;border-collapse:collapse;background:#fff;border-radius:.8em;overflow:hidden;font-size:.9em;}
+      .htable th{background:var(--ink);color:#fff;text-align:left;padding:.8em 1em;font-size:.85em;letter-spacing:.04em;}
+      .htable td{padding:.75em 1em;border-bottom:.08em solid var(--line);color:var(--body);vertical-align:top;line-height:1.45;}
+      .htable .seg{font-weight:bold;color:var(--ink);}
+      .verdict{display:inline-block;font-size:.72em;font-weight:bold;letter-spacing:.08em;border-radius:1em;padding:.25em .8em;margin-left:.5em;vertical-align:middle;}
+      .v-keep{background:#DCF2E5;color:#1C6B43;} .v-demote{background:#FDEBD2;color:#8A5200;} .v-retire{background:#F7DCE1;color:#9C2F45;}
+      /* brand house visual */
+      .bh{max-width:64em;margin:0 auto;}
+      .bh .roof{background:var(--ink);color:#fff;border-radius:.9em .9em 0 0;padding:1.4em 2em;text-align:center;}
+      .bh .roof .ri{font-size:2em;font-weight:bold;letter-spacing:.02em;}
+      .bh .roof .ri span{color:var(--teal);}
+      .bh .roof .rd{font-size:.95em;color:var(--pale);margin-top:.4em;}
+      .bh .roof .rd b{color:var(--amber);}
+      .bh .sign{background:var(--teald);color:#fff;text-align:center;padding:.7em;font-size:1em;}
+      .bh .sign b{font-style:italic;}
+      .bh .sign span{color:#CDEEEF;font-size:.82em;margin-left:.9em;}
+      .bh .cols{display:flex;gap:.7em;margin-top:.7em;}
+      .bh .col{flex:1;background:#fff;border:.08em solid var(--line);border-top:.3em solid var(--teal);border-radius:0 0 .5em .5em;padding:1em .9em;cursor:pointer;transition:.2s;}
+      .bh .col:hover{transform:translateY(-.2em);box-shadow:0 .6em 1.6em rgba(15,27,28,.12);}
+      .bh .col h5{font-size:1.05em;color:var(--ink);}
+      .bh .col .cm{font-size:.75em;color:var(--teald);font-weight:bold;margin:.3em 0 .5em;text-transform:uppercase;letter-spacing:.05em;}
+      .bh .col p{font-size:.8em;color:var(--body);line-height:1.45;}
+      .bh .col .cd2{font-size:.78em;color:var(--amberd);font-weight:bold;margin-top:.5em;}
+      .bh .band{display:flex;gap:.7em;margin-top:.7em;}
+      .bh .bcard{flex:1;background:#F6F9F9;border:.08em solid var(--line);border-radius:.5em;padding:.9em 1em;}
+      .bh .bcard h6{font-size:.78em;color:var(--teald);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.4em;}
+      .bh .bcard p{font-size:.8em;color:var(--body);line-height:1.5;}
+      .bh .found{margin-top:.7em;background:var(--ink);color:#fff;border-radius:0 0 .9em .9em;padding:1.2em 2em;display:flex;gap:2em;align-items:center;}
+      .bh .found .fq{flex:1.1;}
+      .bh .found .fq .fl{color:var(--amber);font-size:.72em;letter-spacing:.14em;text-transform:uppercase;margin-bottom:.4em;}
+      .bh .found .fq .ft{font-size:1.05em;font-weight:bold;line-height:1.35;}
+      .bh .found .fr{flex:1.6;display:flex;gap:1.2em;}
+      .bh .found .fr div{flex:1;border-left:.14em solid var(--teal);padding-left:.8em;}
+      .bh .found .fr b{font-size:.85em;display:block;}
+      .bh .found .fr span{font-size:.72em;color:var(--pale);line-height:1.35;display:block;margin-top:.2em;}
+      /* architecture panel */
+      .am{display:flex;gap:1em;}
+      .am .colA{width:17em;flex-shrink:0;display:flex;flex-direction:column;}
+      .am .colB{flex:1;display:flex;flex-direction:column;}
+      .am .colC{width:19em;flex-shrink:0;display:flex;flex-direction:column;gap:.6em;}
+      .am .lbl2{font-size:.72em;font-weight:bold;letter-spacing:.14em;color:var(--teald);text-transform:uppercase;margin-bottom:.5em;}
+      .am .eng{background:var(--ink);color:#fff;border-radius:.7em;padding:1em;flex:1;}
+      .am .eng h5{font-size:1.05em;margin-bottom:.6em;}
+      .am .eng div{font-size:.78em;color:#DCE9E8;padding:.35em 0 .35em .7em;border-left:.22em solid var(--teal);margin-bottom:.3em;}
+      .am .eng div b{color:#fff;}
+      .am .eng p{font-size:.7em;color:#9FB3B2;line-height:1.4;margin-top:.6em;}
+      .am .mb{background:var(--ink);color:#fff;border-radius:.7em;padding:.9em;text-align:center;}
+      .am .mb h4{font-size:1.25em;color:#fff;}
+      .am .mb h4 span{color:var(--teal);}
+      .am .mb p{font-size:.74em;color:#C3D2D1;margin-top:.3em;}
+      .am .sg{background:var(--teald);color:#fff;text-align:center;border-radius:0 0 .5em .5em;padding:.4em;font-size:.78em;margin:0 .8em .6em;}
+      .am .devs{display:flex;gap:.5em;margin-bottom:.6em;}
+      .am .dv{flex:1;background:#E0F4F4;border:.06em solid #c2e7e7;border-radius:.5em;padding:.55em;}
+      .am .dv b{font-size:.74em;color:var(--teald);display:block;}
+      .am .dv span{font-size:.64em;color:var(--body);line-height:1.3;display:block;margin-top:.15em;}
+      .am .flws{display:flex;gap:.5em;flex:1;}
+      .am .fl{flex:1;border-radius:.5em;padding:.7em;font-size:.72em;line-height:1.5;color:var(--body);}
+      .am .fl.o{background:#fff;border:.06em solid var(--line);}
+      .am .fl.i{background:#FFF6E3;border:.06em solid #F2DFAE;}
+      .am .fl h6{font-size:.8em;margin-bottom:.3em;letter-spacing:.06em;text-transform:uppercase;}
+      .am .fl.o h6{color:var(--teald);} .am .fl.i h6{color:#8A5200;}
+      .am .sb2{background:#fff;border:.06em solid var(--line);border-left:.32em solid var(--teal);border-radius:.5em;padding:.6em .8em;flex:1;}
+      .am .sb2 b{font-size:.86em;}
+      .am .sb2 i{font-size:.62em;font-weight:bold;font-style:normal;color:var(--teald);text-transform:uppercase;letter-spacing:.06em;margin-left:.5em;}
+      .am .sb2 p{font-size:.7em;color:var(--body);line-height:1.4;margin-top:.2em;}
+      .amloop{margin-top:.8em;background:var(--ink);border-radius:.7em;padding:.7em 1em;display:flex;align-items:center;gap:.5em;}
+      .amloop .t{color:var(--amber);font-size:.66em;font-weight:bold;letter-spacing:.12em;text-transform:uppercase;margin-right:.5em;white-space:nowrap;}
+      .amloop .s{background:#12302F;color:#DCE9E8;border-radius:.4em;padding:.5em .6em;font-size:.66em;text-align:center;flex:1;line-height:1.3;}
+      .amloop .a{color:var(--teal);font-size:.9em;font-weight:bold;}
+    </style>
+    <div class="hubwrap">
+      <div class="rail">
+        <button class="rbtn on" data-hp="idea"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6z"/></svg>The idea</button>
+        <button class="rbtn" data-hp="house"><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7M6 10v10h12V10"/></svg>Brand house</button>
+        <button class="rbtn" data-hp="arch"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2.6"/><circle cx="5" cy="18" r="2.6"/><circle cx="19" cy="18" r="2.6"/><path d="M10.5 6.8L6.2 15.6M13.5 6.8l4.3 8.8M7.6 18h8.8"/></svg>Architecture</button>
+        <button class="rbtn" data-hp="os"><svg viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M5 19l2-2"/></svg>HelpOS</button>
+        <button class="rbtn" data-hp="voice"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l6 5V4L8 9zM17 9c1.2 1.6 1.2 4.4 0 6"/></svg>Voice</button>
+        <button class="rbtn" data-hp="aud"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.4"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M16 5.5a3.4 3.4 0 010 5.8M21 20c0-2.6-1.6-4.8-4-5.6"/></svg>Audiences</button>
+        <button class="rbtn" data-hp="subs"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="5" cy="6" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="12" cy="20" r="2"/><path d="M6.6 7.4L10 10.2M17.4 7.4L14 10.2M12 15v3"/></svg>Sub brands</button>
+        <button class="rbtn" data-hp="msg"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg>Messaging</button>
+        <button class="rbtn" data-hp="road"><svg viewBox="0 0 24 24"><path d="M4 19L19 4M13 4h6v6"/></svg>Road &amp; measures</button>
+        <button class="rbtn" data-hp="lib"><svg viewBox="0 0 24 24"><path d="M5 4h5v16H5zM10 4h5v16h-5zM17 5l4 1-3.5 14-4-1z"/></svg>Library</button>
+        <div class="rsp"></div>
+        <button class="rbtn replay" onclick="exitHub()"><svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5M4 9h9a7 7 0 110 14h-2"/></svg>Replay the journey</button>
+      </div>
+      <div class="hcontent">
+        <div class="hscroll">
+
+          <div class="hp on" id="hp-idea">
+            <h2>The idea</h2><div class="sub">The strategy core, always at hand.</div>
+            <div class="hquote"><div class="q">&ldquo;Everyone tells me they&rsquo;ll help me. Nobody actually shows up.&rdquo;</div><div class="a">The insight the brand stands on</div></div>
+            <div class="hgrid">
+              <div class="hcard dark"><h4>The brand idea</h4><p><b style="color:#fff">HELP SHOWS UP.</b> Help is an event: it either happened or it didn&rsquo;t. We engineer its arrival, evidence it in receipts and timestamps, and air only what we can prove.</p></div>
+              <div class="hcard teal"><h4>The payoff</h4><p><b>&ldquo;Help shows up.&rdquo;</b> Sign-off only, locked to the logo, after proof. It never headlines. The first execution that leads with it has broken the strategy.</p></div>
+              <div class="hcard"><h4>The posture</h4><p>The customer is the hero of the story. The bank is the hand. The friend who arrives with a bakkie when you are moving, not the one who texts &ldquo;let me know if you need anything.&rdquo;</p></div>
+              <div class="hcard"><h4>The four rules</h4><ul><li>Stay inside help: one idea, assets frozen to 2030.</li><li>Prove, don&rsquo;t promise: verified arrivals only.</li><li>Stay humble: claim exactly, never an inch more.</li><li>The entry acid test: plain first read, or it does not go out.</li></ul></div>
+              <div class="hcard"><h4>The five pillars</h4><p>Protection, Value, Resolution, Clarity, Speed. Each carries its own proof: a monthly receipt of what help saved you, the reason attached to every fee, the night&rsquo;s interceptions shown to you, a done list read back before you go, and the time, shown.</p></div>
+              <div class="hcard amber"><h4>Personality</h4><p><b>Grounded. Warm. Understated. Punctual. Precise.</b> Caregiver capability with Everyman humility; never the Hero. Dry humour allowed, victory laps banned.</p></div>
+            </div>
+          </div>
+
+          <div class="hp" id="hp-house">
+            <h2>The brand house</h2><div class="sub">The whole strategy on one structure. The print poster (A3) ships in the library.</div>
+            <div class="bh">
+              <div class="roof"><div class="ri">HELP <span>SHOWS UP</span></div><div class="rd">Help is <b>an event</b>. We engineer its arrival, evidence it, and air only what we can prove.</div></div>
+              <div class="sign"><b>&ldquo;Help shows up.&rdquo;</b><span>Signs after proof, locked to the logo. It never headlines.</span></div>
+              <div class="cols">
+                <div class="col"><h5>Protection</h5><div class="cm">Harm coming</div><p>&ldquo;We caught it before you even knew.&rdquo;</p><div class="cd2">The night shift record</div></div>
+                <div class="col"><h5>Value</h5><div class="cm">Money tight</div><p>&ldquo;Helped: R240 in fees you didn&rsquo;t pay this month.&rdquo;</p><div class="cd2">The Helped receipt</div></div>
+                <div class="col"><h5>Resolution</h5><div class="cm">Something broke</div><p>&ldquo;Here&rsquo;s what&rsquo;s now done that wasn&rsquo;t done when you called.&rdquo;</p><div class="cd2">The done list</div></div>
+                <div class="col"><h5>Clarity</h5><div class="cm">Answer owed</div><p>&ldquo;An answer, a reason and a date. Even when it’s a no.&rdquo;</p><div class="cd2">The attached reason</div></div>
+                <div class="col"><h5>Speed</h5><div class="cm">Time is everything</div><p>&ldquo;It landed. 19 seconds.&rdquo;</p><div class="cd2">The timestamp</div></div>
+              </div>
+              <div class="band">
+                <div class="bcard"><h6>Who help shows up for</h6><p>Entry, retail, affluent &amp; private, SME, commercial. All category buyers, light buyers first; the entry customer is the acid test.</p></div>
+                <div class="bcard"><h6>How we speak</h6><p>Past tense. Customer as subject. Exact claims. A time when the moment earns it. Banned lexicon in force.</p></div>
+                <div class="bcard"><h6>The house we keep</h6><p>Every name stays, each with a proof job. eBucks = value returned. eWallet = the arrival rail. Connect = connectivity as help. nav&gt;&gt; = journeys proven step by step. Invest = growth in rand. Insure = the claim, done. Private Bank (RMB and FNB) = advice that arrives. One sign off in the house.</p></div>
+              </div>
+              <div class="found">
+                <div class="fq"><div class="fl">The insight we stand on</div><div class="ft">&ldquo;Everyone tells me they&rsquo;ll help me. Nobody actually shows up.&rdquo;</div></div>
+                <div class="fr">
+                  <div><b>Stay inside help</b><span>One idea, held for years.</span></div>
+                  <div><b>Prove, don&rsquo;t promise</b><span>No evidence, no airtime.</span></div>
+                  <div><b>Stay humble</b><span>Publish only what is true.</span></div>
+                  <div><b>The acid test</b><span>Plain first read, or it does not go out.</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="hp" id="hp-arch">
+            <h2>Brand architecture</h2><div class="sub">How one brand amplifies the ecosystem. The A3 print version lives in the library.</div>
+            <div class="am">
+              <div class="colA">
+                <div class="lbl2">The engine: where help is made</div>
+                <div class="eng">
+                  <h5>HelpOS</h5>
+                  <div><b>Anticipate</b> the warning before the harm</div>
+                  <div><b>Explain</b> the reason on every event</div>
+                  <div><b>Act</b> the arrival itself</div>
+                  <div><b>Protect</b> the night, watched</div>
+                  <div><b>Learn</b> why next month&rsquo;s help is earlier</div>
+                  <p>Internal names, never consumer facing. HelpOS makes help happen; the brand makes it count.</p>
+                </div>
+              </div>
+              <div class="colB">
+                <div class="lbl2" style="text-align:center">The masterbrand: where help is proven</div>
+                <div class="mb"><h4>HELP <span>SHOWS UP</span></h4><p>Help is an event. We engineer its arrival, evidence it, and air only what we can prove.</p></div>
+                <div class="sg">The sign off, after proof: <b><i>&ldquo;FNB. Help shows up.&rdquo;</i></b></div>
+                <div class="devs">
+                  <div class="dv"><b>The Helped receipt</b><span>what our help saved you, monthly, in rand</span></div>
+                  <div class="dv"><b>The reason on everything</b><span>every fee explains itself in one sentence</span></div>
+                  <div class="dv"><b>The night shift</b><span>what was watched and stopped, shown</span></div>
+                  <div class="dv"><b>The done list</b><span>what got fixed, read back</span></div>
+                </div>
+                <div class="flws">
+                  <div class="fl o"><h6>&#8595; The brand gives</h6>One grammar of proof. One sign off, after evidence. The proof devices. One CI, one entry test. The memory: FNB equals help that arrived.</div>
+                  <div class="fl i"><h6>&#8593; The house gives back</h6>Arrivals, the raw material of every story. Fame in each territory. Evidence in rand and minutes. Coverage of the buying moments that decide growth.</div>
+                </div>
+              </div>
+              <div class="colC">
+                <div class="lbl2">The ecosystem: every name stays</div>
+                <div class="sb2"><b>eWallet</b><i>the arrival rail</i><p>Money that lands in seconds, arrival time shown.</p></div>
+                <div class="sb2"><b>eBucks</b><i>the value proof engine</i><p>Value returned, counted in rand on the receipt.</p></div>
+                <div class="sb2"><b>nav&gt;&gt; family</b><i>the journeys proof engine</i><p>Home, car, money: long projects proven step by step, always with its plain descriptor.</p></div>
+                <div class="sb2"><b>FNB Connect</b><i>the connectivity proof engine</i><p>Data and airtime that arrive when needed.</p></div>
+                <div class="sb2"><b>FNB Invest</b><i>the growth proof engine</i><p>Growth and fees in rand, in plain sentences.</p></div>
+                <div class="sb2"><b>FNB Insure</b><i>the protection proof engine</i><p>The claim that ends in a done list, with a clock.</p></div>
+                <div class="sb2"><b>Private Bank</b><i>the advice proof engine</i><p>Both marques, RMB and FNB. Advice that arrives before you ask.</p></div>
+              </div>
+            </div>
+            <div class="amloop">
+              <span class="t">The loop</span>
+              <div class="s">HelpOS engineers an arrival</div><span class="a">&#8594;</span>
+              <div class="s">The receipt evidences it</div><span class="a">&#8594;</span>
+              <div class="s">The story airs, signed</div><span class="a">&#8594;</span>
+              <div class="s">The receipt gets shared</div><span class="a">&#8594;</span>
+              <div class="s">The standard tightens</div><span class="a">&#8594;</span>
+              <div class="s">The next arrival lands earlier</div>
+            </div>
+          </div>
+
+          <div class="hp" id="hp-os">
+            <h2>HelpOS</h2><div class="sub">The engine and the evidence: HelpOS makes help happen, the brand makes it count.</div>
+            <div class="hgrid" style="margin-bottom:1em">
+              <div class="hcard dark"><h4>What HelpOS is</h4><p>The bank&rsquo;s operating system for help: everything organised around one question, running on <b style="color:#fff">Anticipate, Explain, Act, Protect, Learn</b>, powered by NAVi and AIP, rolled out inside first. The CEO&rsquo;s framing: &ldquo;we will lead with help, and we will prove it before we promise it.&rdquo;</p></div>
+              <div class="hcard teal"><h4>What the brand adds</h4><p>The evidence layer. HelpOS produces arrivals; the brand&rsquo;s devices publish them. The receipt is HelpOS&rsquo;s public ledger; the attached reason is its Explain layer with a customer face; the done list is Act, made visible. Every rand of HelpOS investment returns twice: the help, and the memory it builds.</p></div>
+              <div class="hcard amber"><h4>The naming rule</h4><p>HelpOS, NAVi, AIP and agents are internal language, never consumer facing brands. On stage, intelligence is only ever why help was awake: &ldquo;You slept. Help didn&rsquo;t.&rdquo; Calm, not sci-fi; the entry acid test applies: customers get help, not operating systems.</p></div>
+            </div>
+            <table class="htable">
+              <tr><th style="width:14%">HelpOS verb</th><th style="width:20%">Brand pillar</th><th style="width:22%">Proof device</th><th>What the customer sees</th></tr>
+              <tr><td class="seg">Anticipate</td><td>Protection, Value</td><td>The night shift, the fee warning</td><td>Warned before the bounce. Watched before the harm.</td></tr>
+              <tr><td class="seg">Explain</td><td>Clarity</td><td>The attached reason</td><td>Every fee, hold and decline explains itself in one sentence.</td></tr>
+              <tr><td class="seg">Act</td><td>Resolution, Speed</td><td>The done list, the timestamp</td><td>&ldquo;Here&rsquo;s what&rsquo;s now done.&rdquo; &ldquo;It landed. 19 seconds.&rdquo;</td></tr>
+              <tr><td class="seg">Protect</td><td>Protection</td><td>The night shift record</td><td>03:41. Card blocked. Sleep unbroken.</td></tr>
+              <tr><td class="seg">Learn</td><td>The compounding loop</td><td>The receipt + the sentiment loop</td><td>Every arrival teaches the system; next month&rsquo;s help arrives earlier.</td></tr>
+            </table>
+            <div class="hgrid" style="margin-top:1em">
+              <div class="hcard"><h4>The same sequencing</h4><p>HelpOS is inside out: never market help you cannot deliver internally. The brand roadmap is the same rule: inside first, then receipts, then the era of proof, with the one quarter rule as the contractual version of prove before promise.</p></div>
+              <div class="hcard"><h4>What the brand protects HelpOS from</h4><p>Invisibility (an operating system customers never perceive builds no mental availability) and the sci-fi trap (glowing AI language customers distrust). The brand converts capability into memory, and keeps the technology backstage.</p></div>
+              <div class="hcard dark"><h4>The loop that compounds</h4><p>HelpOS engineers an arrival &#8594; the receipt evidences it &#8594; the story airs, signed &#8594; the receipt gets shared &#8594; the standard tightens &#8594; HelpOS learns and anticipates earlier. By 2030 the OS and the brand are indistinguishable from outside: one system, one signature.</p></div>
+            </div>
+          </div>
+
+          <div class="hp" id="hp-voice">
+            <h2>Voice</h2><div class="sub">The grammar of proof, and the words we keep and ban.</div>
+            <div class="hgrid">
+              <div class="hcard teal"><h4>The five rules</h4><ul><li>Help lives in the past tense: proof lives there.</li><li>The customer is the subject of every sentence.</li><li>Claim exactly: our precise part, never more.</li><li>Name the minute when it earns its place. Never rounded in our favour, never a quota.</li><li>One thought per sentence, plain in every language.</li><li><b>The say it aloud test:</b> if a person wouldn&rsquo;t say it to a friend, it does not go out. People and money do things; abstractions don&rsquo;t.</li></ul></div>
+              <div class="hcard"><h4>Before and after</h4><p><i>&ldquo;Unfortunately your application has been declined.&rdquo;</i><br>&#8594; <b>&ldquo;Not yet. Here&rsquo;s the reason, and the two things that would make it a yes.&rdquo;</b></p><p style="margin-top:.7em"><i>&ldquo;We apologise for any inconvenience.&rdquo;</i><br>&#8594; <b>&ldquo;That was our mistake. It&rsquo;s fixed, here&rsquo;s what changed.&rdquo;</b></p></div>
+              <div class="hcard dark"><h4>The banned lexicon</h4><p>&ldquo;Unfortunately.&rdquo; &ldquo;We apologise for any inconvenience.&rdquo; &ldquo;Your call is important to us.&rdquo; &ldquo;We care.&rdquo; Every unproven character claim. Banned as policy, not style.</p></div>
+              <div class="hcard"><h4>Words we own</h4><p>Helped. Sorted. Showed up. Arrived. Done. The receipt. The timestamp. The record word (Helped / Sorted / Showed up) is in consumer testing; use Helped until it reports.</p></div>
+              <div class="hcard"><h4>Service language</h4><p>Open with &ldquo;How can we help you?&rdquo; (service level only, no lockup). Close with the done list: &ldquo;Before you go, here&rsquo;s what&rsquo;s now done that wasn&rsquo;t done when you called.&rdquo;</p></div>
+              <div class="hcard amber"><h4>The timestamp device</h4><p>An instrument, not a rule: used where the moment is the point (protection, speed, honoured clocks), skipped where it adds nothing. Only ever on help delivered, never behaviour observed. Time first, event second, outcome third. Evidence that lies once is dead forever.</p></div>
+            </div>
+          </div>
+
+          <div class="hp" id="hp-aud">
+            <h2>Audiences</h2><div class="sub">Five portraits, one method: reach everyone, win the buying situations, keep personas as illustrations.</div>
+            <table class="htable">
+              <tr><th style="width:15%">Segment</th><th style="width:21%">The wound</th><th style="width:22%">Lead pillars &amp; spine</th><th>Buying situations that must summon FNB</th></tr>
+              <tr><td class="seg">Entry &amp; first time banked</td><td>Being made to feel like a cost to the bank.</td><td>Value + Speed. <i>&ldquo;Help doesn&rsquo;t check your balance first.&rdquo;</i></td><td>Get money home today (eWallet). The money is finished (warn first). Data died (Connect). What is this deduction (the reason, one tap).</td></tr>
+              <tr><td class="seg">Mass retail</td><td>The suspicion that the bank profits from their chaos.</td><td>Protection + Value. <i>&ldquo;Helped: the fee that never arrived.&rdquo;</i></td><td>Will I make the 25th. What is this fee. Card trouble (03:41). First salary.</td></tr>
+              <tr><td class="seg">Affluent &amp; private</td><td>Opacity dressed as exclusivity.</td><td>Clarity + Protection. <i>&ldquo;You’ll never have to explain it twice.&rdquo;</i></td><td>Don&rsquo;t make me explain twice. What am I paying you. The estate, finally finished.</td></tr>
+              <tr><td class="seg">SME owners</td><td>Fragile exactly when the bank is slow.</td><td>Resolution + Speed. <i>&ldquo;Asked at 23:04. Helped at 23:06.&rdquo;</i></td><td>Payroll Thursday, invoice missing. Funding with a date and a why. Card machine down Saturday.</td></tr>
+              <tr><td class="seg">Commercial &amp; enterprise</td><td>Enterprise fees for relationship theatre.</td><td>Clarity + Resolution. <i>&ldquo;We put it in writing. Hold us to it.&rdquo;</i></td><td>The facility review (business receipt). Deal funding at deal speed. The RFP asks why FNB.</td></tr>
+            </table>
+            <div class="hgrid" style="margin-top:1em">
+              <div class="hcard teal"><h4>Rule 1</h4><p>Reach all category buyers; light buyers decide growth. Portraits sharpen creative, never narrow media.</p></div>
+              <div class="hcard"><h4>Rule 2</h4><p>The buying situation is the strategic unit: we track, per segment, which real life money moments bring FNB to mind, and briefs target the weakest links.</p></div>
+              <div class="hcard amber"><h4>Rule 3</h4><p>Nomvula, Sipho, Priya, Thabo and Anele are labelled illustrations. Citing them as evidence is a category error.</p></div>
+            </div>
+          </div>
+
+          <div class="hp" id="hp-subs">
+            <h2>Sub brands</h2><div class="sub">One masterbrand, one payoff. Every name stays; each one has a proof job.</div>
+            <div class="hgrid two">
+              <div class="hcard"><h4>eBucks <span class="verdict v-keep">KEEP</span></h4><p>The value proof engine. Reframed from rewards you earn to value returned, counted in rand on the receipt (&ldquo;Value returned this month: R418&rdquo;). Keeps its fame; never runs its own promise language; signs with the FNB payoff.</p></div>
+              <div class="hcard"><h4>eWallet <span class="verdict v-keep">KEEP</span></h4><p>The arrival rail and the entry market&rsquo;s front door. &ldquo;Send help in seconds.&rdquo; Every send carries its arrival time. Endorsed as FNB eWallet; its fame feeds the masterbrand.</p></div>
+              <div class="hcard"><h4>FNB Connect <span class="verdict v-keep">KEEP</span></h4><p>The connectivity proof engine, and the most tangible arrival medium we own: data and airtime that land at the exact moment of need. Keeps its name and its customers; speaks in the masterbrand voice. &ldquo;Helped: 1GB arrived before your data ran out.&rdquo;</p></div>
+              <div class="hcard"><h4>nav&gt;&gt; family <span class="verdict v-keep">KEEP</span></h4><p>The journeys proof engine: Money, Home, Car, Wellness. It proves help across the long projects of a life: a done state at every step, a progress receipt showing what moved this month, the reason attached to every requirement. Always with its plain descriptor (&ldquo;nav&gt;&gt; Home, the home buying journey in the app&rdquo;), always in masterbrand CI, always signing with the FNB line.</p></div>
+              <div class="hcard"><h4>FNB Invest <span class="verdict v-keep">KEEP</span></h4><p>The growth proof engine, in the category where promises are cheapest and evidence rarest. Growth, contributions and fees shown in rand and plain sentences, losses reported as plainly as gains. &ldquo;Your money grew R3,120 this quarter. Here is where.&rdquo;</p></div>
+              <div class="hcard"><h4>FNB Insure <span class="verdict v-keep">KEEP</span></h4><p>The protection proof engine, in the industry where help most famously never arrives. Every claim ends in a done list with a clock; every no comes with a reason and a path. &ldquo;Claim paid. Nine days, start to finish.&rdquo;</p></div>
+              <div class="hcard"><h4>Private Bank <span class="verdict v-keep">KEEP</span></h4><p>The advice proof engine, covering both marques: RMB Private Bank and FNB Private Bank, each keeping its badge where it trades today. The differentiator no other private bank can prove is advice as an arrival: &ldquo;Your banker called before the markets did,&rdquo; with a name, a reason and a next step.</p></div>
+              <div class="hcard dark"><h4>The four question test</h4><p>1. Standalone fame worth building on? 2. What arrivals does it manufacture or evidence? 3. Would a customer new to banking understand it first read? 4. What would break if it ran its own promise language? The answers set the treatment (famous proof asset, endorsed offer, dual brand), never the survival. No new sub brands without Exco exception.</p></div>
+              <div class="hcard teal" style="grid-column:1/-1"><h4>What the strategy gives these businesses</h4><p>Borrowed trust that compounds: every arrival one proves pre sells the next one&rsquo;s claim. Shared shelf space: the monthly receipt puts Connect&rsquo;s data, Invest&rsquo;s growth, Insure&rsquo;s claim and nav&gt;&gt;&rsquo;s milestone in front of every customer, free. Cheaper growth: the masterbrand buys the fame once; seven businesses spend on proving. And protection from each other: nothing airs without evidence, so no one&rsquo;s overclaim can spend another&rsquo;s credibility.</p></div>
+            </div>
+          </div>
+
+          <div class="hp" id="hp-msg">
+            <h2>Messaging</h2><div class="sub">Every message: claim + evidence + moment. Sign-off after proof.</div>
+            <div class="hgrid">
+              <div class="hcard teal"><h4>The hierarchy</h4><ul><li><b>L1</b> Masterbrand narrative: done saying, started arriving.</li><li><b>L2</b> Five pillar spines.</li><li><b>L3</b> Segment messages by wound.</li><li><b>L4</b> Product formula: what arrives, when, with what evidence.</li></ul></div>
+              <div class="hcard"><h4>The funnel</h4><p><b>SHOUT:</b> big, verified arrival stories for everyone. <b>SING:</b> the receipt and the standards, for people comparing banks. <b>The deciding moment:</b> a dated, specific promise. <b>HUM:</b> the receipt keeps customers; the done list makes them talk about us.</p></div>
+              <div class="hcard"><h4>Competitive response</h4><p>Never argue, show receipts. Price attacks: publish counted value. Ambition campaigns: add proof. Helpfulness claims: say nothing; post a fresh timestamp.</p></div>
+              <div class="hcard dark"><h4>The proof story template</h4><p>[Timestamp]. [Event, customer as subject]. [Outcome]. [Sign-off.]<br><br><i>&ldquo;03:41. Thandi&rsquo;s card was blocked, 90 seconds after the skimmer touched it. She found out at breakfast. FNB. Help shows up.&rdquo;</i></p></div>
+              <div class="hcard"><h4>The decline template</h4><p>&ldquo;Not yet. [The reason, one sentence]. [The two things that would make it a yes, with a date to try again.]&rdquo;</p></div>
+              <div class="hcard amber"><h4>The six question gate</h4><p>Ladders to a pillar? Evidence verified? Customer the subject? Claim exact? Would a person say it aloud? Payoff signs after proof? All six or it does not go out.</p></div>
+            </div>
+          </div>
+
+          <div class="hp" id="hp-road">
+            <h2>Road &amp; measures</h2><div class="sub">Three horizons, the scoreboard, and the honest risk register.</div>
+            <div class="hgrid">
+              <div class="hcard teal"><h4>H1: inside first (0 to 9m)</h4><p>Arrival standards set and measured. Every fee, hold and decline starts explaining itself in one plain sentence, wherever the customer meets it. The verb helped requires proof. Staff see receipts first. Nothing airs.</p></div>
+              <div class="hcard teal"><h4>H2: the receipts (9 to 24m)</h4><p>The receipt reaches every segment. Overnight help becomes visible. eBucks becomes value returned. nav&gt;&gt; journeys get progress receipts. First proof stories air.</p></div>
+              <div class="hcard teal"><h4>H3: the era of proof (yr 2 to 5)</h4><p>Standards published externally. The help record becomes a public, auditable asset. The category follows.</p></div>
+              <div class="hcard"><h4>The scoreboard</h4><ul><li>Arrivals delivered (gates every campaign).</li><li>Which money moments bring FNB to mind, tracked per segment.</li><li>Value 53 &#8594; 65. Satisfaction 49 &#8594; 60. Churn under 14%.</li><li>Asset health: payoff linkage, timestamp fame, receipt shares.</li></ul></div>
+              <div class="hcard"><h4>The cultural rule</h4><p>A quarter where communication metrics soar while arrival reliability slips is a failed quarter, and no one celebrates it.</p></div>
+              <div class="hcard dark"><h4>The risk register</h4><p>The ops gap (inside first, one quarter rule). Overclaim creep (the breaking rule in governance). Receipt inflation (audit owns accuracy). Imitation (the moat is the archive). Fatigue (frozen assets).</p></div>
+            </div>
+          </div>
+
+          <div class="hp" id="hp-lib">
+            <h2>Library</h2><div class="sub">The full system. This hub is the front door; these are the rooms.</div>
+            <div class="hgrid">
+              <div class="hcard teal"><h4>Strategic Narrative</h4><p>The eight minute &ldquo;read this first&rdquo; story. Give it to anyone with zero context.</p></div>
+              <div class="hcard"><h4>FNB 2030 Brand Strategy</h4><p>The complete strategic document: platform, positioning, devices, architecture, roadmap, measurement.</p></div>
+              <div class="hcard"><h4>Brand Book</h4><p>The working manual: voice with rewrites, visual and sonic direction, applications, the sub brand playbook.</p></div>
+              <div class="hcard"><h4>Messaging Framework</h4><p>Hierarchy, audience matrix, funnel messaging, competitive response, templates, the gate.</p></div>
+              <div class="hcard"><h4>Audience Architecture</h4><p>Five portraits with money moments, CEP grids, channel realities and labelled personas.</p></div>
+              <div class="hcard teal"><h4>Audience Playbooks</h4><p>The brand solved per audience: message houses, sample receipts and worked demonstrations for entry, youth, retail, affluent, private, SME, commercial, internal and media.</p></div>
+              <div class="hcard teal"><h4>Brand Architecture Map</h4><p>The A3 visual of how one brand amplifies the ecosystem: HelpOS the engine, the masterbrand the evidence layer, five proof engines, and the compounding loop.</p></div>
+              <div class="hcard"><h4>Business Segment Playbooks</h4><p>The brand per official RBB segment: Entry Wallet to Business Platinum, with the R5m to R20m seam treated honestly.</p></div>
+              <div class="hcard"><h4>Brand House poster</h4><p>The strategy on one page, print grade, A3. Stick it up above your desk.</p></div>
+              <div class="hcard"><h4>Master Brand Story deck</h4><p>The 50 slide cinematic telling in five acts, with closing acts for Exco, agencies and staff.</p></div>
+              <div class="hcard"><h4>Brand Audit 2026</h4><p>The evidence base: perception, churn, equity and language findings that earned this strategy.</p></div>
+              <div class="hcard amber"><h4>Governance</h4><p>Custodian: brand strategy. Arrival standards: CMO + COO. Verification: insights. Receipt accuracy: internal audit. Exceptions: Exco only.</p></div>
+            </div>
+          </div>
+
+        </div>
+        <div class="hfoot"><div><b>FNB Brand Hub</b> &nbsp;|&nbsp; Help shows up &nbsp;|&nbsp; Confidential</div><div>Questions and exceptions: brand strategy team</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MENU ============ -->
+  <div id="menu">
+    <button class="mclose" onclick="toggleMenu(false)">&#215;</button>
+    <h3>Navigate the experience</h3>
+    <div class="msub">Twelve screens from insight to reveal, then the working hub.</div>
+    <div class="mgrid" id="mgrid"></div>
+  </div>
+
+  <div class="botbar" id="botbar">
+    <div class="counter" id="counter">01 / 12</div>
+    <div class="dots" id="dots"></div>
+    <div class="navbtns">
+      <button class="arrow" id="prevBtn" onclick="go(-1)" aria-label="Previous"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <button class="arrow next" id="nextBtn" onclick="go(1)" aria-label="Next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 5l7 7-7 7"/></svg></button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const stageEl=document.getElementById('stage');
+  stageEl.addEventListener('scroll',()=>{stageEl.scrollLeft=0;stageEl.scrollTop=0;});
+  const screens=[...document.querySelectorAll('.screen')];
+  const titles=['The cold open','The promises','The wound','The mirror','The insight','The definition','The reveal','The receipt','The pillars','The law','The road','2030'];
+  let cur=0, inHub=false;
+
+  const dots=document.getElementById('dots');
+  screens.forEach((_,i)=>{const d=document.createElement('button');d.className='dot'+(i===0?' on':'');d.onclick=()=>show(i);d.setAttribute('aria-label','Screen '+(i+1));dots.appendChild(d);});
+
+  const mg=document.getElementById('mgrid');
+  titles.forEach((t,i)=>{const b=document.createElement('button');b.className='mbtn';b.innerHTML='<div class="mn">'+String(i+1).padStart(2,'0')+'</div><div class="mt">'+t+'</div>';b.onclick=()=>{toggleMenu(false);if(inHub)exitHub();show(i);};mg.appendChild(b);});
+  const hb=document.createElement('button');hb.className='mbtn hubm';hb.innerHTML='<div class="mn">HUB</div><div class="mt">The brand hub &#8594;</div>';hb.onclick=()=>{toggleMenu(false);enterHub();};mg.appendChild(hb);
+
+  function show(i){
+    if(i<0||i>=screens.length)return;
+    screens[cur].classList.add('back');
+    screens[cur].classList.remove('on');
+    const prev=cur; cur=i;
+    screens[cur].classList.remove('back');
+    void screens[cur].offsetWidth;
+    screens[cur].classList.add('on');
+    setTimeout(()=>screens[prev].classList.remove('back'),600);
+    document.querySelectorAll('.dot').forEach((d,j)=>d.classList.toggle('on',j===cur));
+    document.getElementById('counter').textContent=String(cur+1).padStart(2,'0')+' / '+screens.length;
+    document.getElementById('actlabel').textContent=titles[cur];
+    document.getElementById('prevBtn').disabled=(cur===0);
+    document.getElementById('nextBtn').disabled=false;
+    if(cur===3){document.querySelectorAll('#s3 .fill').forEach(f=>{f.style.width='0';setTimeout(()=>f.style.width=f.dataset.w,350);});}
+    if(cur===4){document.querySelectorAll('#s4 .gbar').forEach(g=>{g.style.height='0';setTimeout(()=>g.style.height=g.dataset.h,350);});}
+    if(cur===7){renderReceipt(currentR);}
+  }
+  function go(d){ if(cur+d>=screens.length){enterHub();return;} show(cur+d); }
+  screens[0].classList.add('on');
+
+  document.addEventListener('keydown',e=>{
+    if(document.getElementById('menu').classList.contains('on')){if(e.key==='Escape')toggleMenu(false);return;}
+    if(inHub)return;
+    if(e.key==='ArrowRight'||e.key==='Enter'||e.key===' ')go(1);
+    if(e.key==='ArrowLeft')go(-1);
+  });
+
+  function toggleMenu(on){document.getElementById('menu').classList.toggle('on',on);}
+
+  // promise wall
+  function stampAll(){
+    const ps=[...document.querySelectorAll('#s1 .promise')];
+    ps.forEach((p,i)=>setTimeout(()=>p.classList.add('stamped'), i*450));
+  }
+  function resetStamps(){document.querySelectorAll('#s1 .promise').forEach(p=>p.classList.remove('stamped'));}
+
+  // receipts
+  const receipts={
+    retail:{mon:'March', lines:[
+      ['R240','in fees you didn’t pay, warned before they landed'],
+      ['R418','value returned, counted in rand, including eBucks'],
+      ['03:41','one threat blocked while you slept, card safe'],
+      ['19 sec','your fastest eWallet send this month'],
+      ['2 answers','both with a date and a why, one now a yes']]},
+    entry:{mon:'March', lines:[
+      ['R0','to receive money. eWallet in, always free'],
+      ['R86','in fees that never arrived, warned in time'],
+      ['14 sec','your money reached your sister in Lusikisiki'],
+      ['1GB','arrived before your data died, two days to payday'],
+      ['1 answer','the R12 deduction, explained in one sentence']]},
+    sme:{mon:'March', lines:[
+      ['23:06','funding answer arrived, two minutes after you asked'],
+      ['R3,120','in charges avoided across your payment runs'],
+      ['Thursday','payroll cleared, bridge in place by Tuesday night'],
+      ['09:12','card machine back up, Saturday, before first orders'],
+      ['1 no','with the reason, and the two things for a yes in May']]}
+  };
+  let currentR='retail';
+  function renderReceipt(key){
+    currentR=key;
+    const r=receipts[key];
+    document.getElementById('rmon').textContent=r.mon;
+    const box=document.getElementById('rlines');
+    box.innerHTML='';
+    r.lines.forEach((l,i)=>{
+      const d=document.createElement('div'); d.className='rline';
+      d.innerHTML='<div class="amt">'+l[0]+'</div><div class="txt">'+l[1]+'</div>';
+      box.appendChild(d);
+      setTimeout(()=>d.classList.add('on'), 250+i*240);
+    });
+  }
+  document.querySelectorAll('.rtab').forEach(t=>t.addEventListener('click',()=>{
+    document.querySelectorAll('.rtab').forEach(x=>x.classList.remove('on'));
+    t.classList.add('on'); renderReceipt(t.dataset.r);
+  }));
+
+  // pillars
+  const pillars=[
+    ['“We caught it before you even knew.”','Fraud watched and blocked while the country sleeps. Warnings that beat the damage. Device: <b>the night shift record</b>. 03:41. Card blocked.'],
+    ['“Helped: R240 in fees you didn’t pay this month.”','Fees warned before they land. eBucks reframed as value returned, in rand. Device: <b>the Helped receipt</b>, monthly, counted, never flattering.'],
+    ['“Here’s what’s now done that wasn’t done when you called.”','Resolution clocks, callbacks that arrive early, done meaning the customer agrees. Device: <b>the done list</b>, closing every interaction.'],
+    ['“An answer, a reason and a date. Even when it’s a no.”','Every fee, hold and decline explains itself in one sentence. A no comes with a path back to yes. The proof: <b>the reason, attached</b> to every fee, hold and decline.'],
+    ['“It landed. 19 seconds.”','Payments, payouts and openings with the clock shown, never rounded in our favour. Device: <b>the timestamp</b>, on everything that moves.']
+  ];
+  const pcards=[...document.querySelectorAll('.pcard')];
+  function selPillar(i){
+    pcards.forEach((c,j)=>c.classList.toggle('sel',i===j));
+    document.getElementById('pspine').textContent=pillars[i][0];
+    document.getElementById('pbody').innerHTML=pillars[i][1];
+  }
+  pcards.forEach((c,i)=>c.addEventListener('click',()=>selPillar(i)));
+  selPillar(0);
+
+  // hub
+  function enterHub(){
+    inHub=true;
+    document.getElementById('hub').style.display='block';
+    document.getElementById('botbar').style.display='none';
+    document.getElementById('modeName').textContent='Brand Hub';
+    document.getElementById('actlabel').textContent='The working reference';
+  }
+  function exitHub(){
+    inHub=false;
+    document.getElementById('hub').style.display='none';
+    document.getElementById('botbar').style.display='flex';
+    document.getElementById('modeName').textContent='Brand Experience';
+    show(0);
+  }
+  document.querySelectorAll('.rbtn[data-hp]').forEach(b=>b.addEventListener('click',()=>{
+    document.querySelectorAll('.rbtn[data-hp]').forEach(x=>x.classList.remove('on'));
+    document.querySelectorAll('.hp').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    document.getElementById('hp-'+b.dataset.hp).classList.add('on');
+    document.querySelector('.hscroll').scrollTop=0;
+  }));
+</script>
+</body>
+</html>
